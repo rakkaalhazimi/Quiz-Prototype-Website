@@ -1,61 +1,64 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.utils.decorators import method_decorator
 from django.views import generic
 
 from .forms import LoginForm, RegisterForm
-from .models import User
+
 
 # Create your views here.
 class IndexView(generic.View):
+    template_name = "index.html"
+
+    @method_decorator(login_required(login_url="/login"), name="dispatch")
+    def get(self, request):
+        return render(request, self.template_name)
+
+    
+class LoginView(generic.View):
+    template_name = "login.html"
 
     def get(self, request):
         context = {"form": LoginForm()}
-        return render(request, "index.html", context)
+        return render(request, self.template_name, context)
 
     def post(self, request):
         form = LoginForm(request.POST)
         context = {"form": form}
+
         username = request.POST.get("username")
         password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
 
-        if User.check_username(username) and User.check_password(password):
-            ...
-        
-        else:
-            form.add_error("username", "Incorrect username or password")
-            return render(request, "index.html", context)
-
+        if user is not None:
+            login(request, user)
+            return redirect("index")
+            
+        form.add_error("username", "Incorrect username or password")
+        return render(request, self.template_name, context)
 
 
 class RegisterView(generic.View):
+    template_name = "register.html"
     
     def get(self, request):
         context = {"form": RegisterForm()}
-        return render(request, "register.html", context)
+        return render(request, self.template_name, context)
 
     def post(self, request):
         form = RegisterForm(request.POST)
         context = {"form": form}
         
-        name = request.POST.get("name")
-        user = request.POST.get("username")
-        password = request.POST.get("password")
-        confirm_password = request.POST.get("confirm_password")
+        if form.is_valid():
+            form.save()
+            return redirect("login")
 
-        if User.check_name(name):
-            form.add_error("name", "Name already exists")
-
-        if User.check_username(user):
-            form.add_error("username", "Username already exists")
-
-        if password != confirm_password:
-            form.add_error("confirm_password", "Confirm password must match the password")
-
-        if form.errors:
-            return render(request, "register.html", context)
-
-        return "Register success"
+        return render(request, self.template_name, context)
     
 
-class QuizPageView(generic.View):
-    ...
+class LogoutView(generic.View):
+
+    def get(self, request):
+        logout(request)
+        return redirect("login")
