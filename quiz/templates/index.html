@@ -5,4 +5,22 @@
 <h1>Amazing Quiz</h1>
 <p>The most challenging quiz in the world</p>
 <button><a href="{% url 'logout' %}">Logout</a></button>
+
+<form method="POST">
+{% csrf_token %}
+{% for question, answers in data %}
+  <h3>{{ question.text }}</h3>
+  <ul>
+    {% for option in answers %}
+    <input 
+      type="radio" 
+      name="{{ question.id }}" 
+      value="{{ option.option }}"
+    >
+    <label for="{{ question.id }}">{{ option.text }}</label>
+    {% endfor %}
+  </ul>
+  {% endfor %}
+  <input type="submit" value="Submit">
+</form>
 {% endblock %}
