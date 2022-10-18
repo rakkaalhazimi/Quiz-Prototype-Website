@@ -7,8 +7,21 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 class Questions(models.Model):
     MAX_QUESTION = 10
     serial = models.IntegerField(
-        default=1, validators=[MaxValueValidator(MAX_QUESTION), MinValueValidator(1)])
+        default=1, 
+        validators=[MaxValueValidator(MAX_QUESTION), MinValueValidator(1)])
     text = models.CharField(max_length=500)
+
+    def get_answers(self):
+        return Answers.objects.filter(question=self.id)
+
+    @classmethod
+    def get_questions(cls):
+        return cls.objects.all()
+
+    @classmethod
+    def get_questions_answers(cls):
+        for question in cls.get_questions():
+            yield question, question.get_answers()
     
 
 class Answers(models.Model):
@@ -25,5 +38,26 @@ class Answers(models.Model):
 
 
 class Scores(models.Model):
+    POINT = 5
     score = models.IntegerField()
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    @classmethod
+    def create_or_get_score(cls, user):
+        if not cls.objects.filter(user=user):
+            score = cls(user=user, score=0)
+            score.save()
+            return score
+        return cls.objects.get(user=user)
+
+    def set_score(self, question_ids, options):
+        self.score = 0
+        for question_id, option in zip(question_ids, options):
+            try:
+                answer = Answers.objects.filter(question=question_id, option=option)
+                if answer.key_answer:
+                    self.score += self.POINT
+            except ValueError:
+                print("It is a CSRF token")
+            
+        
