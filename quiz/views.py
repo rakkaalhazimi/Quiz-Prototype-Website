@@ -20,7 +20,7 @@ class IndexView(generic.View):
 
     def post(self, request):
         self.count_score(request)
-        return redirect("index")
+        return redirect("board")
 
     def count_score(self, request):
         user_score = Scores.create_or_get_score(request.user)
