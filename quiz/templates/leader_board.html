@@ -2,28 +2,31 @@
 
 
 {% block content %}
-<h1>Leader Board</h1>
-<p><a href="{% url 'index' %}">Play again</a></p>
-<table>
+<div class="container col-12 col-md-6 my-5 p-5 bg-white border border-1">
 
-  <thead>
-    <tr>
-      <th>Rank</th>
-      <th>Name</th>
-      <th>Score</th>
-    </tr>
-  </thead>
+  <h1>Leader Board</h1>
+  <table class="table">
+  
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+  
+    <tbody>
+      <tr>
+        {% for object in object_list %}
+        <td>{{ forloop.counter }}</td>
+        <td>{{ object.user.get_full_name }}</td>
+        <td>{{ object.score }}</td>
+        {% endfor %}
+      </tr>
+    </tbody>
+  
+  </table>
 
-  <tbody>
-    <tr>
-      {% for object in object_list %}
-      <td>{{ forloop.counter }}</td>
-      <td>{{ object.user.get_full_name }}</td>
-      <td>{{ object.score }}</td>
-      {% endfor %}
-    </tr>
-  </tbody>
-
-</table>
+</div>
 
 {% endblock %}
