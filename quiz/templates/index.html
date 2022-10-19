@@ -2,25 +2,44 @@
 
 
 {% block content %}
-<h1>Amazing Quiz</h1>
-<p>The most challenging quiz in the world</p>
-<button><a href="{% url 'logout' %}">Logout</a></button>
+<div class="container col-12 col-md-6 my-5 bg-white border border-1">
+  <div class="container p-3">
+    <h1 class="text-center">Amazing Quiz</h1>
+    <p class="text-center">The most challenging quiz in the world</p>
+    <button class="btn btn-light"><a href="{% url 'logout' %}">Logout</a></button>
+  </div>
 
-<form method="POST">
-{% csrf_token %}
-{% for question, answers in data %}
-  <h3>{{ question.text }}</h3>
-  <ul>
-    {% for option in answers %}
-    <input 
-      type="radio" 
-      name="{{ question.id }}" 
-      value="{{ option.option }}"
-    >
-    <label for="{{ question.id }}">{{ option.text }}</label>
+  <form method="POST">
+    <!-- Differentiate each input id by using question.id, option and forloop count -->
+    {% csrf_token %}
+    {% for question, answers in data %}
+    <div class="container p-3 p-sm-5 my-3 border border-1">
+      <p>{{ forloop.counter }}. {{ question.text }}</p>
+
+      {% for option in answers %}
+        <input 
+          type="radio"
+          id="{{ question.id }}{{ forloop.counter }}{{ option.option }}"
+          name="{{ question.id }}" 
+          value="{{ option.option }}" 
+          class="btn-check"
+          autocomplete="off"
+        >
+        <label 
+          for="{{ question.id }}{{ forloop.counter }}{{ option.option }}" 
+          class="container my-1 btn btn-outline-primary"
+        >
+          {{ option.text }}
+        </label>
+      {% endfor %}
+
+    </div>
     {% endfor %}
-  </ul>
-  {% endfor %}
-  <input type="submit" value="Submit">
-</form>
+    <div class="text-center">
+      <button class="btn btn-success text-center mb-3">
+        Submit
+      </button>
+    </div>
+  </form>
+</div>
 {% endblock %}
