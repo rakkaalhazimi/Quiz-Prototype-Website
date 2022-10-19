@@ -51,13 +51,17 @@ class Scores(models.Model):
         return cls.objects.get(user=user)
 
     def set_score(self, question_ids, options):
-        self.score = 0
+        score = 0
+        
         for question_id, option in zip(question_ids, options):
-            try:
-                answer = Answers.objects.filter(question=question_id, option=option)
-                if answer.key_answer:
-                    self.score += self.POINT
-            except ValueError:
-                print("It is a CSRF token")
+            if question_id == "csrfmiddlewaretoken":
+                continue
+            answer = Answers.objects.get(question=question_id, option=option)
+            if answer.key_answer:
+                score += self.POINT
+        
+        self.score = score
+        self.save()
+        
             
         
