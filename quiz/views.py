@@ -33,7 +33,7 @@ class LeaderBoardView(generic.ListView):
     template_name = "leader_board.html"
 
     def get_queryset(self):
-        return self.model.objects.order_by("score")
+        return self.model.objects.order_by("-score")
 
 
 class LoginView(generic.View):
