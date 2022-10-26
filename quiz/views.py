@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views import generic
 
-from .forms import LoginForm, RegisterForm, formset
+from .forms import formset
 from .models import Questions, Answers, UsersAnswers
 
 
@@ -43,49 +43,8 @@ class LeaderBoardView(generic.View):
         return self.model.objects.order_by("-score")
 
 
-class LoginView(generic.View):
-    template_name = "login.html"
-
-    def get(self, request):
-        context = {"form": LoginForm()}
-        return render(request, self.template_name, context)
-
-    def post(self, request):
-        form = LoginForm(request.POST)
-        context = {"form": form}
-
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            return redirect("index")
-
-        form.add_error("username", "Incorrect username or password")
-        return render(request, self.template_name, context)
-
-
-class RegisterView(generic.View):
-    template_name = "register.html"
-
-    def get(self, request):
-        context = {"form": RegisterForm()}
-        return render(request, self.template_name, context)
-
-    def post(self, request):
-        form = RegisterForm(request.POST)
-        context = {"form": form}
-
-        if form.is_valid():
-            form.save()
-            return redirect("login")
-
-        return render(request, self.template_name, context)
-
-
-class LogoutView(generic.View):
-
-    def get(self, request):
-        logout(request)
-        return redirect("login")
+def test_view(request):
+    if request.method == "POST":
+        print(request.POST.get("form-0-username"))
+    context = {"form": formset}
+    return render(request, "test.html", context)
