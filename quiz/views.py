@@ -41,10 +41,3 @@ class LeaderBoardView(generic.View):
 
     def get_queryset(self):
         return self.model.objects.order_by("-score")
-
-
-def test_view(request):
-    if request.method == "POST":
-        print(request.POST.get("form-0-username"))
-    context = {"form": formset}
-    return render(request, "test.html", context)
