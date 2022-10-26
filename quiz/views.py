@@ -25,10 +25,12 @@ class IndexView(generic.View):
     def post(self, request):
         score = 0
         for question_id, choice in request.POST.items():
-            if question_id != "csrfmiddlewaretoken":
-                answer = Answers.objects.get(question_id=question_id, choice=choice)
-                if answer.is_right:
-                    score += 5
+            if question_id == "csrfmiddlewaretoken":
+                continue
+
+            answer = Answers.objects.get(question_id=question_id, choice=choice)
+            if answer.is_right:
+                score += 5
         print(score)
         return redirect("board")
 
