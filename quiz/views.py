@@ -16,30 +16,45 @@ class IndexView(generic.View):
     def get(self, request):
         questions = Questions.objects.all()
         questions_answers = []
+        
         for question in questions:
-            questions_answers.append((question, Answers.objects.filter(question_id=question.id)))
+            answers = Answers.objects.filter(question=question.id)
+            questions_answers.append((question, answers))
         
         context = {"data": questions_answers}
         return render(request, self.template_name, context)
 
     def post(self, request):
-        score = 0
-        for question_id, choice in request.POST.items():
+        for question_id, answer_id in request.POST.items():
             if question_id == "csrfmiddlewaretoken":
                 continue
 
-            answer = Answers.objects.get(question_id=question_id, choice=choice)
-            if answer.is_right:
-                score += 5
-        print(score)
+            question = Questions.objects.get(id=question_id)
+            answer = Answers.objects.get(id=answer_id, question=question_id)
+
+            try:
+                user_answer = UsersAnswers.objects.get(user=request.user, question=question)
+                user_answer.answer = answer
+                user_answer.save()
+
+            except UsersAnswers.DoesNotExist:
+                user_answer = UsersAnswers(user=request.user, question=question, answer=answer)
+                user_answer.save()
+
         return redirect("board")
 
 
-class LeaderBoardView(generic.View):
+class LeaderBoardView(generic.ListView):
+    model = UsersAnswers
     template_name = "leader_board.html"
 
-    def get(self, request):
-        return render(request, self.template_name)
-
     def get_queryset(self):
-        return self.model.objects.order_by("-score")
+        # Group all user by its score
+        # Score is a total of correct answers multiplied by some constant
+        full_name = Concat(F("user__first_name"), Value(" "), F("user__last_name"))
+        score = Sum("answer__is_right", output_field=IntegerField()) * 5
+        
+        return (self.model.objects.values("user__first_name")
+                                  .annotate(name=full_name)
+                                  .annotate(score=score)
+                                  .order_by("score"))
