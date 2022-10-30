@@ -41,7 +41,26 @@ class IndexView(generic.View):
                 user_answer = UsersAnswers(user=request.user, question=question, answer=answer)
                 user_answer.save()
 
-        return redirect("board")
+        return redirect("result")
+
+
+class QuizResultView(generic.View):
+    template_name = "quiz_result.html"
+
+    @method_decorator(login_required(login_url="/login"), name="dispatch")
+    def get(self, request):
+        questions = Questions.objects.all()
+        questions_answers = []
+        
+        for question in questions:
+            answers = Answers.objects.filter(question=question.id)
+            user_answer = UsersAnswers.objects.get(question=question.id).answer
+            questions_answers.append((question, answers, user_answer))
+        
+        context = {"data": questions_answers}
+        return render(request, self.template_name, context)
+
+
 
 
 class LeaderBoardView(generic.ListView):
