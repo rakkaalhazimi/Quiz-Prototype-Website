@@ -3,6 +3,9 @@ from django.contrib import admin
 from .models import Questions, Answers
 
 # Register your models here.
+
+# Create inline class to insert one model
+# into another model form
 class AnswersInline(admin.TabularInline):
     model = Answers
 
